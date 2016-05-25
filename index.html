@@ -16,6 +16,7 @@
 				height: 300px;
 			}
 			#mainWrapper{
+				
 			}
 
 			#chatWrapper{
@@ -38,7 +39,6 @@
 			}
 
 			#namesWrapper{
-				display:none;
 				float:left;
 				border :1px #ccc solid;
 				border-radius: 10px;
@@ -64,11 +64,11 @@
 			</div>
 
 			<div id="mainWrapper">
-				<h2>ChatIO</h2>
 				<div id = "chatWrapper">
 					<div id = "chatWindow"></div>
 					<form id = "messageForm">
 						<input size= "35" id="message" placeholder="Type something...">
+						<input size= "10" id="receivername" placeholder="Receiver name">
 						<input type="submit" value="Say It!">
 					</form>
 				</div>
@@ -87,15 +87,40 @@
 					var $messageForm = $('#messageForm');
 					var $message = $('#message');
 					var $chat = $('#chatWindow');
-
+					var $usernameForm = $('#usernameForm');
+					var $username = $('#username');
+					$('#chatWrapper').hide();
+					
 					$messageForm.submit( function(e){
 						e.preventDefault();
-						socket.emit('send message',$message.val());
+						socket.emit('send message',{
+							"receivername":$('#receivername').val(),
+							"msg":$message.val()
+						});
+						
 						$message.val(''); 
 					} );
+					
+					$usernameForm.submit( function(e){
+						e.preventDefault();
+						socket.emit('new user', $username.val() );		
+						$username.val('');
+						$('#namesWrapper').hide();
+						$('#chatWrapper').show();
+					});
 
 					socket.on('new message',function(data){
-						$chat.append( data.msg +'<br>');
+						$chat.append( data.sendername+": "+data.msg +'<br>');
+					});
+					
+					socket.on('new user',function(data){
+						$('#users').append( data.username +'<br>');
+					});
+					socket.on('fetched users',function(data){
+						$('#users').empty();
+						data.forEach( function(element){
+							$('#users').append( element +'<br>');
+						} );
 					});
 			} );
 		</script>
